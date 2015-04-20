@@ -1,0 +1,33 @@
+(defparameter *nodes* '
+  ((wohnzimmer (du bist in einem wohnzimmer.
+                   ein zauberer schnarcht laut auf dem sofa.))
+  (garten (du bist in einem schoenen garten.
+               vor dir befindet sich ein brunnen.))
+  (dachboden (du bist auf dem dachboden.
+                 in der ecke steht ein riesiger schweissbrenner.))))
+
+(defparameter *edges* '((wohnzimmer (garten westen tuer)
+                                    (dachboden oben leiter))
+                        (garten (wohnzimer osten tuer))
+                        (dachboden (wohnzimmer unten leiter))))
+
+(defparameter *objekte* '(whiskyflasche eimer frosch kette))
+
+(defparameter *objekt-standorte* '((whiskyflasche wohnzimmer)
+                                   (eimer wohnzimmer)
+                                   (kette garten)
+                                   (frosch garten)))
+
+(defun beschreibe-standort (standort nodes)
+  (cadr (assoc standort nodes)))
+
+(defun beschreibe-pfad (edge)
+  `(Hier kannst du eine ,(caddr edge) nach ,(cadr edge) benutzen.))
+
+(defun beschreibe-pfade (standort edges)
+  (apply #'append (mapcar #'beschreibe-pfad (cdr (assoc standort edges)))))
+
+(defun objekte-an (ort objekte obj-ort)
+  (labels ((an-ort-p (obj)
+             (eq (cadr (assoc obj obj-ort)) ort)))
+    (remove-if-not #'an-ort-p objekte)))
