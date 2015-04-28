@@ -31,3 +31,24 @@
   (labels ((an-ort-p (obj)
              (eq (cadr (assoc obj obj-ort)) ort)))
     (remove-if-not #'an-ort-p objekte)))
+
+(defun beschreibe-objekte (ort objekte objekt-orte)
+  (labels ((beschreibe-objekt (obj)
+             `(du siehst das objekt ,obj auf dem boden.)))
+    (apply #'append (mapcar #'beschreibe-objekt (objekte-an ort objekte objekt-orte)))))
+
+(defparameter *standort* 'wohnzimmer)
+
+(defun schaue ()
+  (append (beschreibe-standort *standort* *nodes*)
+          (beschreibe-pfade *standort* *edges*)
+          (beschreibe-objekte *standort* *objekte* *objekt-standorte*)))
+
+(defun gehe (richtung)
+  (let ((next (find richtung
+                    (cdr (assoc *standort* *edges*))
+                    :key #'cadr)))
+    (if next
+      (progn (setf *standort* (car next))
+             (schaue))
+      '(du kannst nicht dorthin gehen.))))
