@@ -52,3 +52,13 @@
       (progn (setf *standort* (car next))
              (schaue))
       '(du kannst nicht dorthin gehen.))))
+
+(defun nimm (objekt)
+  (cond ((member objekt
+                 (objekte-an *standort* *objekte* *objekt-standorte*))
+         (push (list objekt 'inventar) *objekt-standorte*)
+         `(du hast das objekt ,objekt aufgenommen.))
+        (t '(du kannst das nicht aufheben.))))
+
+(defun inventar ()
+  (cons 'objekte- (objekte-an 'inventar *objekte* *objekt-standorte*)))
