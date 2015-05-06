@@ -172,7 +172,7 @@
                      (cdr (assoc *player-pos* *congestion-city-edges*)))))
     (if edge
       (handle-new-place edge pos charging)
-      (princ "That location does not exist!"))))
+      (list () '(That location does not exist!)))))
 
 (defun handle-new-place (edge pos charging)
   (let* ((node (assoc pos *congestion-city-nodes*))
@@ -181,12 +181,52 @@
     (pushnew pos *visited-nodes*)
     (setf *player-pos* pos)
     (draw-known-city)
-    (cond ((member 'cops edge) (princ "You ran into cops. Game Over."))
+    (cond ((member 'cops edge) (list '(game over!) '(you ran into cops.)))
           ((member 'wumpus node) (if charging
-                                  (princ "You found the Wumpus!")
-                                  (princ "You ran into the Wumpus")))
-          (charging (princ "You wasted your last bullet. Game Over."))
-          (has-worm (let ((new-pos (random-node)))
-                      (princ "You ran into a Glow Worm Gang! You're now at ")
-                      (print new-pos)
-                      (handle-new-place nil new-pos nil))))))
+                                  (list '(congratulations!) '(you found the wumpus!))
+                                  (list '(game over!) '(You ran into the wumpus.))))
+          (charging (list '(game over!) '(you wasted your last bullet.)))
+          (has-worm (let* ((new-pos (random-node))
+                           (result (handle-new-place nil new-pos nil)))
+                      (list (car result) `(You ran into a Glow Worm Gang! you are dopped at ,new-pos afterwards.)
+                            (cadr result))))
+          (t (list () `(you arrived at ,pos safely.))))))
+
+(defun wumpus-repl ()
+  (let ((cmd (wumpus-read)))
+    (unless (eq (car cmd) 'quit)
+      (let* ((result (wumpus-eval cmd))
+             (game-over (car result)))
+        (wumpus-print result)
+        (wumpus-repl)))))
+
+(defun wumpus-read ()
+  (read-from-string
+    (concatenate 'string "(" (read-line) ")")))
+
+(defparameter *allowed-commands* '(walk charge new-game))
+
+(defun wumpus-eval (sexp)
+  (if (member (car sexp) *allowed-commands*)
+    (eval sexp)
+    '(what?)))
+
+(defun tweak-text (lst caps lit)
+  (when lst
+    (let ((item (car lst))
+          (rest (cdr lst)))
+      (cond ((eq item #\space) (cons item (tweak-text rest caps lit)))
+            ((member item '(#\! #\? #\.)) (cons item (tweak-text rest t lit)))
+            ((eq item #\") (tweak-text rest caps (not lit)))
+            (lit (cons item (tweak-text rest nil lit)))
+            ((or caps lit) (cons (char-upcase item) (tweak-text rest nil lit)))
+            (t (cons (char-downcase item) (tweak-text rest nil nil)))))))
+
+(defun wumpus-print (lst)
+  (princ (coerce (tweak-text (coerce (string-trim "() "
+                                                  (prin1-to-string (apply #'append lst)))
+                                     'list)
+                             t
+                             nil)
+                 'string))
+  (fresh-line))
