@@ -82,6 +82,15 @@
         *animals*)
   (add-plants))
 
+(defun animal-direction (animal)
+  (let ((dir (animal-dir animal)))
+    (cond ((= 1 dir) #\^)
+          ((= 5 dir) #\v)
+          ((= 3 dir) #\>)
+          ((= 7 dir) #\<)
+          ((or (= 2 dir) (= 6 dir)) #\/)
+          (t #\\))))
+
 (defun draw-world ()
   (loop for y
         below *height*
@@ -89,13 +98,13 @@
                   (princ "|")
                   (loop for x
                         below *width*
-                        do (princ (cond ((some (lambda (animal)
-                                                 (and (= (animal-x animal) x)
-                                                      (= (animal-y animal) y)))
-                                               *animals*)
-                                         #\M)
-                                        ((gethash (cons x y) *plants*) #\*)
-                                        (t #\space))))
+                        do (let ((animal (find-if (lambda (animal)
+                                                    (and (= (animal-x animal) x)
+                                                         (= (animal-y animal) y)))
+                                                  *animals*)))
+                             (princ (cond (animal (animal-direction animal))
+                                          ((gethash (cons x y) *plants*) #\*)
+                                          (t #\space)))))
                   (princ "|"))))
 
 (defun evolution ()
