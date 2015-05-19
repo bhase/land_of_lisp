@@ -1,9 +1,9 @@
 (defun robots ()
   (loop named main
         with directions = '((q . -65) (w . -64) (e . -63) (a . -1)
-                            (d .   1) (x .  63) (x .  64) (c . 65))
+                            (d .   1) (y .  63) (x .  64) (c . 65))
         for pos = 544
-        then (progn (format t "~%qwe/asd/zxc to move, (t)eleport, (l)eave:")
+        then (progn (format t "~%qwe/asd/yxc to move, (t)eleport, (l)eave:")
                     (force-output)
                     (let* ((c (read))
                            (d (assoc c directions)))
