@@ -46,7 +46,6 @@
 
 (defun get-content-params (stream header)
   (let ((length (cdr (assoc 'content-length header))))
-    (princ length)
     (when length
       (let ((content (make-string (parse-integer length))))
         (read-sequence content stream)
@@ -65,10 +64,17 @@
                 (funcall request-handler path header params))))
       (socket-server-close socket))))
 
+;;; example request handler
+;;; use with (serve #'hello-request-handler)
 (defun hello-request-handler (path header params)
+  (format t "HTTP/1.1 200 OK~C~C" #\linefeed #\return)
+  (format t "Content-Language: en; charset=utf8~C~C" #\linefeed #\return)
+  (format t "Connection: close~C~C" #\linefeed #\return)
+  (format t "Content-Type: text/html~C~C" #\linefeed #\return)
+  (format t "~C~C" #\linefeed #\return)
   (if (equal path "greeting")
     (let ((name (assoc 'name params)))
       (if (not name)
-        (princ "<html><body><form>What is your name?<input name='name' /></form></body></html>")
+        (princ "<html><header></header><body><form>What is your name?<input name='name' /></form></body></html>")
         (format t "<html><body>Nice to meet you, ~a!</body></html>" (cdr name))))
     (princ "Sorry... I don't know that page.")))
