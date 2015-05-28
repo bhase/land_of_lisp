@@ -189,8 +189,8 @@
     (let ((tab (gethash player previous)))
       (unless tab
         (setf tab (setf (gethash player previous) (make-hash-table))))
-      (or (gethash treee tab)
-          (setf (gethas tree tab)
+      (or (gethash tree tab)
+          (setf (gethash tree tab)
                 (funcall old-rate-position tree player))))))
 
 (defun get-ratings (tree player)
