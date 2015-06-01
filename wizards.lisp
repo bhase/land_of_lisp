@@ -102,3 +102,41 @@
                              nil)
                  'string))
   (fresh-line))
+
+
+;;; chapter 17: custom game commands
+;;;
+(defun besitze (objekt)
+  (member objekt (inventar)))
+
+(defmacro game-action (command subj obj place &body body)
+  `(progn (defun ,command (subject object)
+            (if (and (eq *standort* ',place)
+                     (eq subject ',subj)
+                     (eq object ',obj)
+                     (besitze ',subj))
+              ,@body
+              '(ich kann ,command so nicht ausführen.)))
+          (pushnew ',command *allowed-commands*)))
+
+(defparameter *chain-welded* nil)
+(game-action schweisse kette eimer dachboden
+  (if (and (besitze 'eimer) (not *chain-welded*))
+    (progn (setf *chain-welded* 't)
+           '(die kette ist jetzt am eimer verschweisst.))
+    '(du hast keinen eimer.)))
+
+(setf *bucket-filled* nil)
+(game-action tauche eimer brunnen garten
+  (if *chain-welded*
+    (progn (setf *bucket-filled* 't)
+           '(der eimer ist jetzt mit wasser gefüllt.))
+    '(der wasserspiegel ist zu niedrig.)))
+
+(game-action schütte eimer zauberer wohnzimmer
+  (cond ((not *bucket-filled*) '(der eimer ist leer.))
+        ((besitze 'frosch) '(der zauberer erwacht und bemerkt dass du seinen frosch gestohlen hast.
+                             er ist so aufgebracht dass er dich in die zwischenwelt verbannt -
+                             du hast verloren! ende.))
+        (t '(der zauberer erwacht von seinem schlummer und begrüsst dich herzlich.
+             er überreicht dir den magischen fettarmen donut - du hast gewonnen! ende.))))
